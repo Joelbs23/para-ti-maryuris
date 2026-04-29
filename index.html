@@ -61,10 +61,10 @@
 
     // --- MENSAJES ---
     const frases = [
+        "Maryuris mi amor",
         "Eres maravillosa",
         "Única",
         "Tus ojos iluminan las estrellas",
-        "Maryuris mi amor",
         "❤️"
     ];
     let index = 0;
@@ -92,7 +92,7 @@
 
     // --- ESTRELLAS QUE CAEN ---
     let estrellas = [];
-    for(let i=0; i<200; i++) {
+    for(let i=0; i<150; i++) {
         estrellas.push({
             x: Math.random()*canvas.width,
             y: Math.random()*canvas.height,
@@ -100,6 +100,45 @@
             v: Math.random()*2 + 1
         });
     }
+
+    // --- ESTRELLAS FUGACES (LAS QUE CRUZAN VOLANDO) ---
+    class ShootingStar {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = 0;
+            this.length = Math.random() * 80 + 60;
+            this.speed = Math.random() * 5 + 4;
+            this.angle = Math.PI / 4; // Ángulo de caída
+            this.opacity = 1;
+        }
+        update() {
+            this.x += this.speed * Math.cos(this.angle);
+            this.y += this.speed * Math.sin(this.angle);
+            this.opacity -= 0.01;
+            if(this.opacity <= 0) this.reset();
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(
+                this.x - this.length * Math.cos(this.angle),
+                this.y - this.length * Math.sin(this.angle)
+            );
+            ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
+
+    let estrellasFugaces = [];
+    // Crear una estrella fugaz cada 3 segundos
+    setInterval(() => {
+        estrellasFugaces.push(new ShootingStar());
+    }, 3000);
+
 
     // --- FUEGOS ARTIFICIALES ---
     class Particle {
@@ -149,7 +188,7 @@
     function animar() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Dibujar estrellas cayendo
+        // Dibujar estrellas fijas cayendo
         ctx.fillStyle = 'white';
         estrellas.forEach(e => {
             e.y += e.v;
@@ -160,6 +199,12 @@
             ctx.beginPath();
             ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
             ctx.fill();
+        });
+
+        // Dibujar estrellas fugaces
+        estrellasFugaces.forEach(estrella => {
+            estrella.update();
+            estrella.draw();
         });
 
         // Dibujar fuegos artificiales
